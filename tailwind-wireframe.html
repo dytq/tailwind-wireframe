@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tailwind Wireframe Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0e10;
+    --bg2: #161618;
+    --bg3: #1e1e21;
+    --bg4: #26262a;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8e8ea;
+    --text2: #888890;
+    --text3: #55555e;
+    --accent: #e8ff47;
+    --accent2: #b8cc2a;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--mono); }
+
+  /* ── LAYOUT ── */
+  #app { display: flex; flex-direction: column; height: 100vh; }
+
+  /* ── TOPBAR ── */
+  #topbar {
+    display: flex; align-items: center; gap: 0;
+    height: 44px; min-height: 44px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    user-select: none;
+  }
+
+  .logo {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 16px; height: 100%;
+    border-right: 1px solid var(--border);
+    font-size: 12px; font-weight: 500; letter-spacing: 0.06em;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .logo-dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+
+  .device-strip {
+    display: flex; align-items: center;
+    padding: 0 12px; gap: 4px;
+    border-right: 1px solid var(--border);
+    height: 100%; overflow-x: auto;
+  }
+  .device-strip::-webkit-scrollbar { display: none; }
+
+  .dbtn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: 5px;
+    background: transparent; border: 1px solid transparent;
+    color: var(--text2); font-family: var(--mono); font-size: 11px;
+    cursor: pointer; white-space: nowrap; transition: all 0.12s;
+  }
+  .dbtn:hover { color: var(--text); background: var(--bg3); }
+  .dbtn.active { background: var(--bg4); border-color: var(--border2); color: var(--accent); }
+  .dbtn svg { flex-shrink: 0; }
+  .dbtn .bplabel { font-size: 9px; color: var(--text3); margin-left: 2px; }
+
+  .toolbar-group {
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 12px; height: 100%;
+    border-right: 1px solid var(--border);
+  }
+
+  .tbtn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 9px; border-radius: 5px;
+    background: transparent; border: 1px solid transparent;
+    color: var(--text2); font-family: var(--mono); font-size: 11px;
+    cursor: pointer; white-space: nowrap; transition: all 0.12s;
+  }
+  .tbtn:hover { color: var(--text); background: var(--bg3); }
+  .tbtn.on { background: var(--bg4); border-color: var(--accent); color: var(--accent); }
+
+  .zoom-group { display: flex; align-items: center; gap: 6px; padding: 0 12px; height: 100%; border-right: 1px solid var(--border); }
+  .zoom-group button { width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border2); background: transparent; color: var(--text2); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
+  .zoom-group button:hover { color: var(--text); background: var(--bg3); }
+  .zoom-val { font-size: 11px; color: var(--text2); min-width: 38px; text-align: center; }
+
+  .tpl-wrap { padding: 0 12px; height: 100%; display: flex; align-items: center; }
+  select.tpl-sel {
+    background: var(--bg3); border: 1px solid var(--border2);
+    color: var(--text2); font-family: var(--mono); font-size: 11px;
+    padding: 5px 28px 5px 10px; border-radius: 5px; cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 8px center;
+  }
+  select.tpl-sel:focus { outline: none; border-color: var(--accent); }
+
+  .spacer { flex: 1; }
+
+  /* ── MAIN SPLIT ── */
+  #main { display: flex; flex: 1; overflow: hidden; }
+
+  /* ── EDITOR ── */
+  #editor-pane {
+    display: flex; flex-direction: column;
+    width: 340px; min-width: 200px; max-width: 560px;
+    border-right: 1px solid var(--border);
+    resize: horizontal; overflow: hidden;
+    background: var(--bg2);
+  }
+
+  .pane-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px; height: 34px; min-height: 34px;
+    border-bottom: 1px solid var(--border);
+    font-size: 10px; color: var(--text3); letter-spacing: 0.08em;
+  }
+  .pane-header span { text-transform: uppercase; }
+
+  #code-editor {
+    flex: 1; padding: 14px; font-family: var(--mono); font-size: 12px;
+    line-height: 1.65; border: none; outline: none; resize: none;
+    background: var(--bg2); color: var(--text);
+    tab-size: 2; overflow-y: auto;
+  }
+  #code-editor::selection { background: rgba(232,255,71,0.2); }
+
+  .editor-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 14px;
+    border-top: 1px solid var(--border);
+    font-size: 10px; color: var(--text3);
+  }
+  .copy-btn {
+    background: transparent; border: 1px solid var(--border2);
+    color: var(--text2); font-family: var(--mono); font-size: 10px;
+    padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all 0.12s;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  
+  /* ── PREVIEW ── */
+  #preview-pane {
+    flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    background: var(--bg);
+  }
+
+  #preview-scroll {
+    flex: 1; overflow: auto; display: flex;
+    align-items: flex-start; justify-content: center;
+    padding: 28px;
+    background: var(--bg);
+    transition: background 0.2s;
+  }
+
+  .device-shell { transform-origin: top center; flex-shrink: 0; transition: transform 0.2s; }
+
+  .d-frame {
+    background: #111; position: relative;
+    box-shadow: 0 0 0 1px #333, 0 12px 40px rgba(0,0,0,0.6);
+  }
+  .d-frame.mobile { border-radius: 28px; padding: 14px; }
+  .d-frame.mobile::before { content: ''; display: block; width: 72px; height: 18px; background: #111; border-radius: 0 0 12px 12px; margin: 0 auto -18px; position: relative; z-index: 1; }
+  .d-frame.tablet { border-radius: 18px; padding: 12px; }
+  .d-frame.laptop { border-radius: 10px 10px 4px 4px; padding: 8px 8px 0; }
+  .d-frame.laptop::after { content: ''; display: block; width: 100%; height: 16px; background: #222; border-radius: 0 0 8px 8px; }
+  .d-frame.desktop { border-radius: 6px; padding: 6px; }
+  .d-frame.widescreen { border-radius: 6px; padding: 4px; }
+
+  .iframe-shell { position: relative; overflow: hidden; border-radius: 3px; background: white; }
+  #preview-iframe { display: block; border: none; }
+
+  /* ── MULTI VIEW ── */
+  #multi-view {
+    flex: 1; overflow: auto; padding: 24px;
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    background: var(--bg);
+  }
+  #multi-view.open { display: grid; }
+
+  .mv-card { display: flex; flex-direction: column; gap: 8px; }
+  .mv-label {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; color: var(--text3);
+  }
+  .mv-label strong { color: var(--text2); }
+  .mv-label .mv-bp { background: var(--bg4); color: var(--text2); padding: 2px 6px; border-radius: 3px; font-size: 9px; }
+  .mv-frame { border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: white; }
+
+  /* ── STATUS BAR ── */
+  #statusbar {
+    display: flex; align-items: center; gap: 16px;
+    height: 26px; padding: 0 14px;
+    border-top: 1px solid var(--border);
+    font-size: 10px; color: var(--text3);
+    background: var(--bg2);
+  }
+  #statusbar .sep { color: var(--border2); }
+  #last-update { margin-left: auto; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+  
+  /* editor display */
+  .hidden {
+    display: none !important;
+  }
+
+  /* grid overlay */
+  #grid-overlay {
+    --grid-columns: 12;
+    --grid-gap: 0px;
+    --grid-margin: 64px;
+
+    position: absolute;
+    display: none;
+    inset: 0;
+    pointer-events: none;
+    
+    padding-left: var(--grid-margin);
+    padding-right: var(--grid-margin);
+
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    gap: var(--grid-gap);
+  }
+
+  #grid-overlay.show {
+    display: grid;
+  }
+
+  #grid-overlay .col {
+    background: rgba(99, 102, 241, 0.07);
+
+    border-left: 1px solid rgba(99, 102, 241, 0.15);
+    border-right: 1px solid rgba(99, 102, 241, 0.15);
+  }
+
+  /* port style */
+  .port-number {
+    width:90px;
+    background:var(--bg3);
+    border:1px solid var(--border2);
+    color:var(--text);
+    border-radius:5px;
+    padding:5px 8px;
+    font-family:var(--mono);
+    font-size:11px;
+  }
+
+  #grid-panel {
+    position: absolute;
+    top: 64px;
+    right: 16px;
+
+    width: 220px;
+
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    padding: 12px;
+
+    z-index: 5000;
+
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #grid-panel.show {
+    display:flex;
+  }
+  
+  .grid-panel-header {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    text-transform: uppercase;
+
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .grid-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .grid-field label {
+    font-size: 11px;
+    color: var(--text2);
+  }
+
+  .grid-field input {
+    width: 100%;
+
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+
+    color: var(--text);
+
+    border-radius: 5px;
+
+    padding: 6px 8px;
+
+    font-family: var(--mono);
+    font-size: 11px;
+
+    outline: none;
+  }
+
+  .grid-field input:focus {
+    border-color: var(--accent);
+  }
+
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      TW WIREFRAME
+    </div>
+
+    <!-- Devices -->
+    <div class="device-strip" id="device-strip"></div>
+
+    <!-- Zoom -->
+    <div class="zoom-group">
+      <button onclick="adjustZoom(-10)">−</button>
+      <span class="zoom-val" id="zoom-display">75%</span>
+      <button onclick="adjustZoom(10)">+</button>
+      <button onclick="resetZoom()" style="font-size:10px;width:auto;padding:0 8px;letter-spacing:0.03em">fit</button>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar-group">
+      <button class="tbtn" id="btn-rotate" onclick="toggleRotate()" title="Pivoter (portrait/paysage)">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="1" width="6" height="10" rx="1.5"/><path d="M11 7l3 3-3 3"/><path d="M14 10H8"/></svg>
+        rotate
+      </button>
+      <button class="tbtn" id="btn-grid" onclick="toggleGrid()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><line x1="5.3" y1="0" x2="5.3" y2="16"/><line x1="10.6" y1="0" x2="10.6" y2="16"/><line x1="0" y1="5.3" x2="16" y2="5.3" stroke-width="0.6" stroke-dasharray="2"/><line x1="0" y1="10.6" x2="16" y2="10.6" stroke-width="0.6" stroke-dasharray="2"/></svg>
+        grille
+      </button>
+      <button class="tbtn" id="btn-bg" onclick="cycleBg()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" stroke-width="1" opacity="0.4"/></svg>
+        fond
+      </button>
+      <button class="tbtn" id="btn-multi" onclick="toggleMulti()">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1" y="1" width="6" height="5" rx="1"/><rect x="9" y="1" width="6" height="5" rx="1"/><rect x="1" y="8" width="6" height="5" rx="1"/><rect x="9" y="8" width="6" height="5" rx="1"/></svg>
+        tout voir
+      </button>
+    </div>
+
+    <!-- Templates -->
+    <div class="tpl-wrap">
+      <select class="tpl-sel" id="tpl-select" onchange="loadTemplate(this.value)">
+        <option value="">— template —</option>
+        <optgroup label="Pages">
+          <option value="landing">Landing page</option>
+          <option value="dashboard">Dashboard</option>
+          <option value="cards">Grille de cartes</option>
+          <option value="hero">Hero + nav</option>
+          <option value="blog">Article blog</option>
+          <option value="pricing">Pricing</option>
+        </optgroup>
+        <optgroup label="Composants">
+          <option value="form">Formulaire</option>
+          <option value="table">Tableau de données</option>
+          <option value="settings">Page paramètres</option>
+        </optgroup>
+        <option value="blank">Vide</option>
+      </select>
+      <input class="port-number" id="port-input" type="number" value="5173" min="1" max="65535" placeholder="Port">
+      <button class="tbtn" onclick="connectPort()"> connect port </button>    
+      <button class="tbtn" onclick="disconnectPort()"> disconnect port </button>  
+    </div>
+
+    <div class="spacer"></div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+
+    <!-- EDITOR -->
+    <div id="editor-pane">
+      <div class="pane-header">
+        <span>HTML + Tailwind CSS</span>
+        <span id="char-count" style="color:var(--text3)">0 chars</span>
+      </div>
+      <textarea id="code-editor" spellcheck="false" oninput="scheduleUpdate()"></textarea>
+      <div class="editor-footer">
+        <span id="line-count">0 lignes</span>
+        <button class="copy-btn" onclick="copyCode()">copier le code</button>
+      </div>
+    </div>
+
+    <!-- GRID PANEL -->
+    <div id="grid-panel">
+      <div class="grid-panel-header">
+        GRID
+      </div>
+
+      <div class="grid-field">
+        <label for="grid-columns">Colums</label>
+        <input
+          id="grid-columns"
+          type="number"
+          min="1"
+          max="48"
+          value="12"
+        />
+      </div>
+
+      <div class="grid-field">
+        <label for="grid-gap">Gap</label>
+        <input
+          id="grid-gap"
+          type="number"
+          min="0"
+          value="16"
+        />
+      </div>
+
+      <div class="grid-field">
+        <label for="grid-margin">Margins</label>
+        <input
+          id="grid-margin"
+          type="number"
+          min="0"
+          value="24"
+        />
+      </div>
+    </div>
+
+    <!-- PREVIEW SINGLE -->
+    <div id="preview-pane">
+      <div id="preview-scroll">
+        <div class="device-shell" id="device-shell">
+          <div class="d-frame" id="d-frame">
+            <div class="iframe-shell" id="iframe-shell">
+              <iframe id="preview-iframe" scrolling="yes"></iframe>
+              <div id="grid-overlay"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- MULTI VIEW -->
+      <div id="multi-view"></div>
+    </div>
+
+  </div>
+
+  <!-- STATUSBAR -->
+  <div id="statusbar">
+    <span>Tailwind CDN v3.4</span>
+    <span class="sep">·</span>
+    <span>sm:640 md:768 lg:1024 xl:1280 2xl:1536</span>
+    <span class="sep">·</span>
+    <span id="status-orient">portrait</span>
+    <span id="last-update"></span>
+  </div>
+
+</div>
+
+<script src="templates.js"></script>
+
+<script>
+/* ─────────────────── DEVICES ─────────────────── */
+const DEVICES = [
+  { id:'xs',   name:'Mobile XS',   w:320,  h:568,  bp:'< sm',  type:'mobile'    },
+  { id:'sm',   name:'iPhone 14',   w:390,  h:844,  bp:'sm',    type:'mobile'    },
+  { id:'md',   name:'iPad',        w:768,  h:1024, bp:'md',    type:'tablet'    },
+  { id:'lg',   name:'Laptop',      w:1024, h:768,  bp:'lg',    type:'laptop'    },
+  { id:'xl',   name:'Desktop HD',  w:1280, h:800,  bp:'xl',    type:'desktop'   },
+  { id:'2xl',  name:'Desktop 2XL', w:1536, h:900,  bp:'2xl',   type:'desktop'   },
+  { id:'4k',   name:'4K',          w:2560, h:1440, bp:'2xl',   type:'widescreen'},
+];
+
+const ICONS = {
+  mobile:     `<svg width="12" height="14" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="1" width="10" height="18" rx="2.5"/><line x1="4.5" y1="17" x2="7.5" y2="17"/></svg>`,
+  tablet:     `<svg width="14" height="14" viewBox="0 0 16 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="1" width="14" height="18" rx="2.5"/><line x1="6.5" y1="17" x2="9.5" y2="17"/></svg>`,
+  laptop:     `<svg width="16" height="14" viewBox="0 0 22 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="1" width="20" height="13" rx="1.5"/><line x1="0" y1="15" x2="22" y2="15"/></svg>`,
+  desktop:    `<svg width="16" height="14" viewBox="0 0 22 18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="1" width="20" height="13" rx="1.5"/><line x1="9" y1="14" x2="9" y2="17"/><line x1="13" y1="14" x2="13" y2="17"/><line x1="6" y1="17" x2="16" y2="17"/></svg>`,
+  widescreen: `<svg width="18" height="14" viewBox="0 0 26 18" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="1" width="24" height="13" rx="1.5"/><line x1="11" y1="14" x2="11" y2="17"/><line x1="15" y1="14" x2="15" y2="17"/><line x1="7" y1="17" x2="19" y2="17"/></svg>`,
+};
+
+/* ─────────────────── STATE ─────────────────── */
+let current = DEVICES[4];
+let zoom = 75;
+let isLandscape = false;
+let showGrid = false;
+let showPanel = false;
+let bgIndex = 0;
+let multiOn = false;
+let updateTimer = null;
+let externalPort = null;
+
+let columnsGrid = document.getElementById('grid-columns').value;
+document.getElementById('grid-overlay').style.setProperty('--grid-columns', columnsGrid);
+
+let marginGrid = document.getElementById('grid-margin').value;
+document.getElementById('grid-overlay').style.setProperty('--grid-margin',`${marginGrid}px`);
+
+let gapGrid = document.getElementById('grid-gap').value;
+document.getElementById('grid-overlay').style.setProperty('--grid-gap',`${gapGrid}px`);
+
+const BGTYPES = ['var(--bg)', '#f1f5f9', '#ffffff', '#0f172a'];
+const BGLABELS = ['dark', 'gris', 'blanc', 'nuit'];
+
+const TW_CDN = 'https://cdn.jsdelivr.net/npm/tailwindcss-cdn@3.4.0/tailwindcss.js';
+
+/* ─────────────────── Port Manager ───────────────── */
+
+function connectPort() {
+  const port =
+    document.getElementById('port-input').value.trim();
+
+  if (!port) return;
+
+  externalPort = port;
+
+    document.getElementById('editor-pane')
+    .classList.add('hidden');
+  
+  const iframe =
+    document.getElementById('preview-iframe');
+
+  iframe.src = `http://localhost:${port}`;
+}
+
+function disconnectPort() {
+  externalPort = null;
+   document.getElementById('editor-pane')
+    .classList.remove('hidden');
+  // Recharger le contenu de l'éditeur dans l'iframe
+  render();
+}
+
+
+
+/* ─────────────────── HELPERS ─────────────────── */
+function getTWBreakpoint(w) {
+  if (w < 640) return '< sm';
+  if (w < 768) return 'sm';
+  if (w < 1024) return 'md';
+  if (w < 1280) return 'lg';
+  if (w < 1536) return 'xl';
+  return '2xl';
+}
+
+function getDims() {
+  if (isLandscape && (current.type === 'mobile' || current.type === 'tablet')) {
+    return { w: current.h, h: current.w };
+  }
+  return { w: current.w, h: current.h };
+}
+
+function buildHTML(code) {
+  return `<!DOCTYPE html><html lang="fr"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="${TW_CDN}"><\/script>
+  </head><body>${code}</body></html>`;
+}
+
+/* ─────────────────── RENDER ─────────────────── */
+function render() {
+  const dims = getDims();
+
+  const iframe = document.getElementById('preview-iframe');
+
+  iframe.style.width = dims.w + 'px';
+  iframe.style.height = dims.h + 'px';
+
+  document.getElementById('iframe-shell').style.cssText =
+    `width:${dims.w}px;height:${dims.h}px;overflow:hidden;border-radius:3px;`;
+
+  // Si un port est connecté, on ne remplace pas le contenu
+  if (externalPort) {
+    return;
+  }
+
+  const code = document.getElementById('code-editor').value;
+
+  const html = buildHTML(code);
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+
+  iframe.src = url;
+}
+
+function renderMulti() {
+  const code = document.getElementById('code-editor').value;
+  const container = document.getElementById('multi-view');
+  container.innerHTML = '';
+
+  DEVICES.forEach(d => {
+    const scale = Math.min(280/d.w, 180/d.h, 0.5);
+    const card = document.createElement('div');
+    card.className = 'mv-card';
+
+    const label = document.createElement('div');
+    label.className = 'mv-label';
+    label.innerHTML = `<div><strong>${d.name}</strong> &nbsp;${d.w}×${d.h}</div><span class="mv-bp">${d.bp}</span>`;
+
+    const mf = document.createElement('div');
+    mf.className = 'mv-frame';
+    mf.style.cssText = `width:${Math.round(d.w*scale)}px;height:${Math.round(d.h*scale)}px;`;
+
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = `width:${d.w}px;height:${d.h}px;border:none;display:block;transform:scale(${scale});transform-origin:top left;`;
+    iframe.scrolling = 'no';
+
+    const html = buildHTML(code);
+    const blob = new Blob([html], { type: 'text/html' });
+    iframe.src = URL.createObjectURL(blob);
+    setTimeout(() => URL.revokeObjectURL(iframe.src), 4000);
+
+    mf.appendChild(iframe);
+    card.appendChild(label);
+    card.appendChild(mf);
+    container.appendChild(card);
+  });
+}
+
+function scheduleUpdate() {
+  clearTimeout(updateTimer);
+  updateTimer = setTimeout(render, 380);
+}
+
+/* ─────────────────── CONTROLS ─────────────────── */
+function selectDevice(id) {
+  current = DEVICES.find(d => d.id === id);
+  isLandscape = false;
+  document.querySelectorAll('.dbtn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.dbtn[data-id="${id}"]`).classList.add('active');
+  render();
+}
+
+function adjustZoom(delta) {
+  zoom = Math.max(15, Math.min(200, zoom + delta));
+  document.getElementById('zoom-display').textContent = zoom + '%';
+  const shell = document.getElementById('device-shell');
+  shell.style.transform = `scale(${zoom/100})`;
+}
+
+function resetZoom() {
+  const dims = getDims();
+  const scrollEl = document.getElementById('preview-scroll');
+  const available = scrollEl.clientWidth - 56;
+  const dims2 = getDims();
+  zoom = Math.min(100, Math.floor((available / dims2.w) * 100 / 5) * 5);
+  zoom = Math.max(15, zoom);
+  document.getElementById('zoom-display').textContent = zoom + '%';
+  render();
+}
+
+function toggleRotate() {
+  if (current.type === 'mobile' || current.type === 'tablet') {
+    isLandscape = !isLandscape;
+    document.getElementById('btn-rotate').classList.toggle('on', isLandscape);
+    render();
+  }
+}
+
+function toggleGrid() {
+  showGrid = !showGrid;
+  showPanel = !showPanel;
+
+  document
+    .getElementById('btn-grid')
+    .classList.toggle('on', showGrid);
+
+  document
+    .getElementById('grid-overlay')
+    .classList.toggle('show', showGrid);
+
+  document 
+    .getElementById('grid-panel')
+    .classList.toggle('show', showPanel)
+}
+
+function cycleBg() {
+  bgIndex = (bgIndex + 1) % BGTYPES.length;
+  document.getElementById('preview-scroll').style.background = BGTYPES[bgIndex];
+  document.getElementById('btn-bg').innerHTML = `
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.5v13M1.5 8h13" stroke="currentColor" stroke-width="1" opacity="0.4"/></svg>
+    fond · ${BGLABELS[bgIndex]}`;
+}
+
+function toggleMulti() {
+  multiOn = !multiOn;
+  const mv = document.getElementById('multi-view');
+  const pv = document.getElementById('preview-scroll');
+  const btn = document.getElementById('btn-multi');
+  if (multiOn) {
+    pv.style.display = 'none';
+    mv.classList.add('open');
+    btn.classList.add('on');
+    renderMulti();
+  } else {
+    pv.style.display = '';
+    mv.classList.remove('open');
+    btn.classList.remove('on');
+  }
+}
+
+function loadTemplate(key) {
+  if (!key || !TEMPLATES[key]) return;
+  document.getElementById('code-editor').value = TEMPLATES[key];
+  document.getElementById('tpl-select').value = '';
+  render();
+}
+
+function copyCode() {
+  const code = document.getElementById('code-editor').value;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    const orig = btn.textContent;
+    btn.textContent = '✓ copié !';
+    btn.style.color = 'var(--accent)';
+    setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 1800);
+  });
+}
+
+/* ─────────────────── INIT ─────────────────── */
+function initDeviceButtons() {
+  const strip = document.getElementById('device-strip');
+  DEVICES.forEach(d => {
+    const btn = document.createElement('button');
+    btn.className = 'dbtn' + (d.id === current.id ? ' active' : '');
+    btn.dataset.id = d.id;
+    btn.title = `${d.name} — ${d.w}×${d.h}px`;
+    btn.innerHTML = `${ICONS[d.type]}<span>${d.w}</span><span class="bplabel">${d.bp}</span>`;
+    btn.onclick = () => selectDevice(d.id);
+    strip.appendChild(btn);
+  });
+}
+
+function initGridOverlay(columns) {
+  
+  const overlay = document.getElementById('grid-overlay');
+
+  overlay.innerHTML = '';
+
+  for (let i = 0; i < columns; i++) {
+    const col = document.createElement('div');
+    col.className = 'col';
+    overlay.appendChild(col);
+  }
+}
+
+/* keyboard shortcuts */
+document.addEventListener('keydown', (event) => {
+  if (event.ctrlKey || event.metaKey) {
+    if (event.key === '=' || event.key === '+') { event.preventDefault(); adjustZoom(10); }
+    if (event.key === '-') { event.preventDefault(); adjustZoom(-10); }
+    if (event.key === '0') { event.preventDefault(); resetZoom(); }
+  }
+});
+
+document.addEventListener('input', (event) => {
+  const grid = document.getElementById('grid-overlay');
+
+  if (event.target.id === 'grid-columns') {
+    columnsGrid = event.target.value;
+    grid.style.setProperty('--grid-columns', columnsGrid);
+    initGridOverlay(columnsGrid)
+  }
+
+  if (event.target.id == 'grid-margin') {
+    marginGrid = event.target.value;
+    grid.style.setProperty('--grid-margin', `${marginGrid}px`);
+  }
+
+  if (event.target.id == 'grid-gap') {
+    gapGrid = event.target.value;
+    grid.style.setProperty('--grid-gap',`${gapGrid}px`);
+  }
+})
+
+initDeviceButtons();
+initGridOverlay(columnsGrid);
+document.getElementById('code-editor').value = TEMPLATES.landing;
+setTimeout(() => { resetZoom(); render(); }, 100);
+</script>
+</body>
+</html>
